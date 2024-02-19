@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import io.github.nettyplus.leakdetector.junit.NettyLeakDetectorExtension;
 import org.apache.avro.file.DataFileStream;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -77,6 +79,7 @@ import org.apache.pinot.spi.utils.CommonConstants.Minion;
 import org.apache.pinot.spi.utils.CommonConstants.Server;
 import org.apache.pinot.spi.utils.JsonUtils;
 import org.apache.pinot.spi.utils.NetUtils;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -92,6 +95,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Base class for integration tests that involve a complete Pinot cluster.
  */
+@ExtendWith(NettyLeakDetectorExtension.class)
 public abstract class ClusterTest extends ControllerTest {
   protected static final int DEFAULT_BROKER_PORT = 18099;
   protected static final Random RANDOM = new Random(System.currentTimeMillis());

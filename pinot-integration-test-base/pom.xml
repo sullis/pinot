@@ -199,5 +199,9 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.github.nettyplus</groupId>
+      <artifactId>netty-leak-detector-junit-extension</artifactId>
+    </dependency>
   </dependencies>
 </project>

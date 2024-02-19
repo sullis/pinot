@@ -1194,6 +1194,12 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>io.github.nettyplus</groupId>
+        <artifactId>netty-leak-detector-junit-extension</artifactId>
+        <version>0.0.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-csv</artifactId>
         <version>1.10.0</version>
