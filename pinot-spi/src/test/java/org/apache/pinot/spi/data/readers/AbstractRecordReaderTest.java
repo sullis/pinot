@@ -19,9 +19,13 @@
 package org.apache.pinot.spi.data.readers;
 
 import com.google.common.collect.Sets;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -30,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -40,6 +45,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
+
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 
 public abstract class AbstractRecordReaderTest {
@@ -204,6 +214,39 @@ public abstract class AbstractRecordReaderTest {
     checkValue(_recordReader, _records, _primaryKeys);
     _recordReader.rewind();
     checkValue(_recordReader, _records, _primaryKeys);
+  }
+
+  @Test
+  public void testNonExistentFile() throws Exception {
+    File nonExistentFile = new File(UUID.randomUUID().toString());
+    try {
+      RecordReader reader = createRecordReader(nonExistentFile);
+      fail("expected exception was not thrown");
+    } catch (FileNotFoundException exception) {
+      assertTrue(exception.getMessage().contains(nonExistentFile.getName()));
+    } finally {
+      assertFalse(nonExistentFile.exists());
+    }
+  }
+
+  @Test
+  public void testCorruptFile() throws Exception {
+    File file = new File(_tempDir, UUID.randomUUID().toString());
+    RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+    randomAccessFile.write("garbage in garbage out".getBytes(StandardCharsets.UTF_8));
+    randomAccessFile.close();
+
+    try {
+      RecordReader reader = createRecordReader(file);
+      if (reader.hasNext()) {
+        reader.next();
+      }
+      fail("expected exception was not thrown");
+    } catch (Exception exception) {
+      assertNotNull(exception.getMessage());
+    } finally {
+      assertTrue(file.exists());
+    }
   }
 
   @Test
