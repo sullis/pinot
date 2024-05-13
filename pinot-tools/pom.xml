@@ -233,7 +233,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -243,7 +243,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                   <extraArgument>-Dpinot.admin.system.exit=true</extraArgument>
                 </extraArguments>
               </jvmSettings>
@@ -255,7 +255,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -266,7 +266,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -277,7 +277,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -288,7 +288,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -299,7 +299,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -310,7 +310,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -320,7 +320,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -330,7 +330,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -340,7 +340,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -350,7 +350,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -361,7 +361,7 @@
                 <initialMemorySize>1G</initialMemorySize>
                 <maxMemorySize>1G</maxMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -371,7 +371,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -381,7 +381,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -391,7 +391,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -401,7 +401,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -411,7 +411,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -421,7 +421,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/quickstart-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -431,7 +431,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
@@ -441,7 +441,7 @@
               <jvmSettings>
                 <initialMemorySize>4G</initialMemorySize>
                 <extraArguments>
-                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml</extraArgument>
+                  <extraArgument>-Dlog4j2.configurationFile=conf/pinot-tools-log4j2.xml -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</extraArgument>
                 </extraArguments>
               </jvmSettings>
             </program>
