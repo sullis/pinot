@@ -64,6 +64,7 @@ public class AsyncQueryResponse implements QueryResponse {
       _serverRoutingStatsManager.recordStatsForQuerySubmission(requestId, serverRoutingInstance.getInstanceId());
       _responseMap.put(serverRoutingInstance, new ServerResponse(startTimeMs));
     }
+    System.out.println("numServersQueried=" + numServersQueried);
     _countDownLatch = new CountDownLatch(numServersQueried);
     _timeoutMs = timeoutMs;
     _maxEndTimeMs = startTimeMs + timeoutMs;
@@ -89,6 +90,7 @@ public class AsyncQueryResponse implements QueryResponse {
       throws InterruptedException {
     try {
       boolean finish = _countDownLatch.await(_maxEndTimeMs - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+      System.out.println("countDownLatch await: finish=" + finish);
       _status.compareAndSet(Status.IN_PROGRESS, finish ? Status.COMPLETED : Status.TIMED_OUT);
       return _responseMap;
     } finally {
@@ -154,6 +156,8 @@ public class AsyncQueryResponse implements QueryResponse {
 
   void receiveDataTable(ServerRoutingInstance serverRoutingInstance, DataTable dataTable, int responseSize,
       int deserializationTimeMs) {
+    System.out.println("receiveDataTable");
+
     ServerResponse response = _responseMap.get(serverRoutingInstance);
     response.receiveDataTable(dataTable, responseSize, deserializationTimeMs);
 
@@ -162,6 +166,7 @@ public class AsyncQueryResponse implements QueryResponse {
   }
 
   void markQueryFailed(ServerRoutingInstance serverRoutingInstance, Exception exception) {
+    System.out.println("markQueryFailed");
     _status.set(Status.FAILED);
     _failedServer = serverRoutingInstance;
     _exception = exception;
@@ -187,6 +192,7 @@ public class AsyncQueryResponse implements QueryResponse {
    * query submission will have failed we do not want to wait for the response.
    */
   void skipServerResponse() {
+    System.out.println("skipServerResponse");
     _countDownLatch.countDown();
   }
 }

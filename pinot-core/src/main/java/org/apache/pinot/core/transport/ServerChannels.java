@@ -183,6 +183,7 @@ public class ServerChannels {
               );
               // NOTE: data table de-serialization happens inside this handler
               // Revisit if this becomes a bottleneck
+              System.out.println("initChannel: adding DataTableHandler");
               ch.pipeline().addLast(ChannelHandlerFactory
                       .getDataTableHandler(_queryRouter, _serverRoutingInstance, _brokerMetrics));
             }

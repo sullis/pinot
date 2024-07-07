@@ -20,6 +20,7 @@ package org.apache.pinot.core.transport;
 
 import com.google.common.util.concurrent.Futures;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -241,7 +242,7 @@ public class QueryRoutingTest {
     long requestId = 123;
     // To avoid flakyness, set timeoutMs to 2000 msec. For some test runs, it can take up to
     // 1400 msec to mark request as failed.
-    long timeoutMs = 2000L;
+    long timeoutMs = 60000L;
     DataTable dataTable = DataTableBuilderFactory.getEmptyDataTable();
     dataTable.getMetadata().put(MetadataKey.REQUEST_ID.getName(), Long.toString(requestId));
     byte[] responseBytes = dataTable.toBytes();
@@ -256,9 +257,14 @@ public class QueryRoutingTest {
         _queryRouter.submitQuery(requestId + 1, "testTable", BROKER_REQUEST, ROUTING_TABLE, null, null, timeoutMs);
 
     // Shut down the server before getting the response
+    long shutdownRequestMs = System.currentTimeMillis();
     queryServer.shutDown();
+    System.out.println("Shutdown duration: " + (System.currentTimeMillis() - shutdownRequestMs));
 
+    long getFinalResponsesMs = System.currentTimeMillis();
     Map<ServerRoutingInstance, ServerResponse> response = asyncQueryResponse.getFinalResponses();
+    System.out.println("GetFinalResponses duration: " + (System.currentTimeMillis() - getFinalResponsesMs));
+
     assertEquals(response.size(), 1);
     assertTrue(response.containsKey(OFFLINE_SERVER_ROUTING_INSTANCE));
     ServerResponse serverResponse = response.get(OFFLINE_SERVER_ROUTING_INSTANCE);

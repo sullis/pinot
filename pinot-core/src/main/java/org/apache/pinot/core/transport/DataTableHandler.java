@@ -50,11 +50,13 @@ public class DataTableHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) {
+    System.out.println(this.getClass().getName() + " channelActive called");
     LOGGER.info("Channel for server: {} is now active", _serverRoutingInstance);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) {
+    System.out.println(this.getClass().getName() + " channelInactive called");
     LOGGER.error("Channel for server: {} is now inactive, marking server down", _serverRoutingInstance);
     _queryRouter.markServerDown(_serverRoutingInstance,
         new RuntimeException(String.format("Channel for server: %s is inactive", _serverRoutingInstance)));
@@ -63,7 +65,9 @@ public class DataTableHandler extends SimpleChannelInboundHandler<ByteBuf> {
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
     Tracing.ThreadAccountantOps.setThreadResourceUsageProvider();
+    System.out.println("channelRead0: about to call msg.readableBytes");
     int responseSize = msg.readableBytes();
+    System.out.println("channelRead0: responseSize=" + responseSize);
     _brokerMetrics.addMeteredGlobalValue(BrokerMeter.NETTY_CONNECTION_BYTES_RECEIVED, responseSize);
     try {
       long deserializationStartTimeMs = System.currentTimeMillis();
