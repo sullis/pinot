@@ -82,6 +82,7 @@ public class S3PinotFSTest {
       throws IOException {
     _s3PinotFS.close();
     _s3Client.close();
+    _s3AsyncClient.close();
     _s3MockContainer.stop();
     FileUtils.deleteQuietly(TEMP_FILE);
   }
