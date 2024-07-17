@@ -11,6 +11,8 @@ import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.CopyObjectResponse;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -92,6 +94,11 @@ public class S3OperationsImpl implements S3Operations {
   @Override
   public AbortMultipartUploadResponse abortMultipartUpload(AbortMultipartUploadRequest request) {
     return _s3Client.abortMultipartUpload(request);
+  }
+
+  @Override
+  public CreateBucketResponse createBucket(CreateBucketRequest request) {
+    return _s3Client.createBucket(request);
   }
 
   @Override

@@ -39,7 +39,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -62,35 +61,32 @@ public class S3PinotFSTest {
 
   private S3MockContainer _s3MockContainer;
   private S3PinotFS _s3PinotFS;
-  private S3Client _s3Client;
-  private S3AsyncClient _s3AsyncClient;
+  private S3Operations _s3Operations;
 
   @BeforeClass
   public void setUp() {
     _s3MockContainer = new S3MockContainer(S3MOCK_VERSION);
     _s3MockContainer.start();
     String endpoint = _s3MockContainer.getHttpEndpoint();
-    _s3Client = createS3ClientV2(endpoint);
-    _s3AsyncClient = createS3AsyncClientV2(endpoint);
+    S3Client s3Client = createS3ClientV2(endpoint);
+    _s3Operations = new S3OperationsImpl(s3Client);
     _s3PinotFS = new S3PinotFS();
-    _s3PinotFS.init(_s3Client);
-    _s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET).build());
+    _s3PinotFS.init(_s3Operations);
+    _s3Operations.createBucket(CreateBucketRequest.builder().bucket(BUCKET).build());
   }
 
   @AfterClass
   public void tearDown()
       throws IOException {
     _s3PinotFS.close();
-    _s3Client.close();
-    _s3AsyncClient.close();
+    _s3Operations.close();
     _s3MockContainer.stop();
     FileUtils.deleteQuietly(TEMP_FILE);
   }
 
   private void createEmptyFile(String folderName, String fileName) {
     String fileNameWithFolder = folderName.length() == 0 ? fileName : folderName + DELIMITER + fileName;
-    _s3Client.putObject(S3TestUtils.getPutObjectRequest(BUCKET, fileNameWithFolder),
-        RequestBody.fromBytes(new byte[0]));
+    _s3Operations.putObject(S3TestUtils.getPutObjectRequest(BUCKET, fileNameWithFolder), new byte[0]);
   }
 
   @Test
@@ -103,7 +99,7 @@ public class S3PinotFSTest {
       _s3PinotFS.touch(URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, fileName)));
     }
     ListObjectsV2Response listObjectsV2Response =
-        _s3Client.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, "", true));
+        _s3Operations.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, "", true));
 
     String[] response = listObjectsV2Response.contents().stream().map(S3Object::key).filter(x -> x.contains("touch"))
         .toArray(String[]::new);
@@ -124,7 +120,7 @@ public class S3PinotFSTest {
       _s3PinotFS.touch(URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, fileNameWithFolder)));
     }
     ListObjectsV2Response listObjectsV2Response =
-        _s3Client.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, folder, false));
+        _s3Operations.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, folder, false));
 
     String[] response = listObjectsV2Response.contents().stream().map(S3Object::key).filter(x -> x.contains("touch"))
         .toArray(String[]::new);
@@ -266,7 +262,7 @@ public class S3PinotFSTest {
     Assert.assertTrue(deleteResult);
 
     ListObjectsV2Response listObjectsV2Response =
-        _s3Client.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, "", true));
+        _s3Operations.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, "", true));
     String[] actualResponse =
         listObjectsV2Response.contents().stream().map(S3Object::key).filter(x -> x.contains("delete"))
             .toArray(String[]::new);
@@ -291,7 +287,7 @@ public class S3PinotFSTest {
     Assert.assertTrue(deleteResult);
 
     ListObjectsV2Response listObjectsV2Response =
-        _s3Client.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, "", true));
+        _s3Operations.listObjectsV2(S3TestUtils.getListObjectRequest(BUCKET, "", true));
     String[] actualResponse =
         listObjectsV2Response.contents().stream().map(S3Object::key).filter(x -> x.contains("delete-2"))
             .toArray(String[]::new);
@@ -360,7 +356,7 @@ public class S3PinotFSTest {
     try {
       createDummyFile(fileToCopy, 1024);
       _s3PinotFS.copyFromLocalFile(fileToCopy, URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, fileName)));
-      HeadObjectResponse headObjectResponse = _s3Client.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, fileName));
+      HeadObjectResponse headObjectResponse = _s3Operations.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, fileName));
       Assert.assertEquals(headObjectResponse.contentLength(), (Long) fileToCopy.length());
       _s3PinotFS.copyToLocalFile(URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, fileName)), fileToDownload);
       Assert.assertEquals(fileToCopy.length(), fileToDownload.length());
@@ -387,7 +383,7 @@ public class S3PinotFSTest {
         // disable multipart upload again for the other UT cases.
         _s3PinotFS.setMultiPartUploadConfigs(-1, 128 * 1024 * 1024);
       }
-      HeadObjectResponse headObjectResponse = _s3Client.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, fileName));
+      HeadObjectResponse headObjectResponse = _s3Operations.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, fileName));
       Assert.assertEquals(headObjectResponse.contentLength(), (Long) fileToCopy.length());
       _s3PinotFS.copyToLocalFile(URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, fileName)), fileToDownload);
       Assert.assertEquals(fileToCopy.length(), fileToDownload.length());
@@ -403,7 +399,7 @@ public class S3PinotFSTest {
     String fileName = "sample.txt";
     String fileContent = "Hello, World";
 
-    _s3Client.putObject(S3TestUtils.getPutObjectRequest(BUCKET, fileName), RequestBody.fromString(fileContent));
+    _s3Operations.putObject(S3TestUtils.getPutObjectRequest(BUCKET, fileName), fileContent.getBytes(StandardCharsets.UTF_8));
 
     InputStream is = _s3PinotFS.open(URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, fileName)));
     String actualContents = IOUtils.toString(is, StandardCharsets.UTF_8);
@@ -418,7 +414,7 @@ public class S3PinotFSTest {
     _s3PinotFS.mkdir(URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, folderName)));
 
     HeadObjectResponse headObjectResponse =
-        _s3Client.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, folderName + "/"));
+        _s3Operations.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, folderName + "/"));
     Assert.assertTrue(headObjectResponse.sdkHttpResponse().isSuccessful());
   }
 
@@ -438,7 +434,7 @@ public class S3PinotFSTest {
       _s3PinotFS.copyFromLocalFile(file, sourceUri);
 
       HeadObjectResponse sourceHeadObjectResponse =
-          _s3Client.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, fileName));
+          _s3Operations.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, fileName));
 
       URI targetUri = URI.create(String.format(FILE_FORMAT, SCHEME, BUCKET, "move-target"));
 
@@ -449,7 +445,7 @@ public class S3PinotFSTest {
       Assert.assertTrue(_s3PinotFS.exists(targetUri));
 
       HeadObjectResponse targetHeadObjectResponse =
-          _s3Client.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, "move-target"));
+          _s3Operations.headObject(S3TestUtils.getHeadObjectRequest(BUCKET, "move-target"));
       Assert.assertEquals(targetHeadObjectResponse.contentLength(),
           fileSize);
       Assert.assertEquals(targetHeadObjectResponse.storageClass(),

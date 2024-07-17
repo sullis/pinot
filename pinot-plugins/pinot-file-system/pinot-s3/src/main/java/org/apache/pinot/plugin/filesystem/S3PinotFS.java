@@ -49,8 +49,6 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
@@ -92,7 +90,7 @@ public class S3PinotFS extends BasePinotFS {
 
   private static final String DELIMITER = "/";
   public static final String S3_SCHEME = "s3://";
-  private S3Operations _s3Client;
+  private S3Operations _s3Operations;
   private boolean _disableAcl;
   private ServerSideEncryption _serverSideEncryption = null;
   private String _ssekmsKeyId;
@@ -149,7 +147,7 @@ public class S3PinotFS extends BasePinotFS {
       if (s3Config.getHttpClientBuilder() != null) {
         s3ClientBuilder.httpClientBuilder(s3Config.getHttpClientBuilder());
       }
-      _s3Client = new S3OperationsImpl(s3ClientBuilder.build());
+      _s3Operations = new S3OperationsImpl(s3ClientBuilder.build());
       setMultiPartUploadConfigs(s3Config);
     } catch (S3Exception e) {
       throw new RuntimeException("Could not initialize S3PinotFS", e);
@@ -157,23 +155,23 @@ public class S3PinotFS extends BasePinotFS {
   }
 
   /**
-   * Initialized the _s3Client directly with provided client.
+   * Initialized the _s3Operations directly with provided client.
    * This initialization method will not initialize the server side encryption
    * @param s3Client s3Client to initialize with
    */
-  public void init(S3Client s3Client) {
-    _s3Client = new S3OperationsImpl(s3Client);
+  public void init(S3Operations s3Client) {
+    _s3Operations = s3Client;
     setMultiPartUploadConfigs(-1, -1);
   }
 
   /**
-   * Initialize the _s3Client directly with provided client, along with additional server side encryption related props
+   * Initialize the _s3Operations directly with provided client, along with additional server side encryption related props
    * @param s3Client s3Client to initialize with
    * @param serverSideEncryption the server side encryption string e.g. AWS_KMS is the only supported on as of now
    * @param serverSideEncryptionConfig properties specific to provided server side encryption type
    */
-  public void init(S3Client s3Client, String serverSideEncryption, PinotConfiguration serverSideEncryptionConfig) {
-    _s3Client = new S3OperationsImpl(s3Client);
+  public void init(S3Operations s3Client, String serverSideEncryption, PinotConfiguration serverSideEncryptionConfig) {
+    _s3Operations = s3Client;
     S3Config s3Config = new S3Config(serverSideEncryptionConfig);
     setServerSideEncryption(serverSideEncryption, s3Config);
     setMultiPartUploadConfigs(s3Config);
@@ -212,7 +210,7 @@ public class S3PinotFS extends BasePinotFS {
     String path = sanitizePath(base.relativize(uri).getPath());
     HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(uri.getHost()).key(path).build();
 
-    return _s3Client.headObject(headObjectRequest);
+    return _s3Operations.headObject(headObjectRequest);
   }
 
   private boolean isPathTerminatedByDelimiter(URI uri) {
@@ -271,7 +269,7 @@ public class S3PinotFS extends BasePinotFS {
       String path = sanitizePath(base.relativize(uri).getPath());
       HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(uri.getHost()).key(path).build();
 
-      _s3Client.headObject(headObjectRequest);
+      _s3Operations.headObject(headObjectRequest);
       return true;
     } catch (NoSuchKeyException e) {
       return false;
@@ -301,7 +299,7 @@ public class S3PinotFS extends BasePinotFS {
     }
 
     ListObjectsV2Request listObjectsV2Request = listObjectsV2RequestBuilder.build();
-    listObjectsV2Response = _s3Client.listObjectsV2(listObjectsV2Request);
+    listObjectsV2Response = _s3Operations.listObjectsV2(listObjectsV2Request);
 
     for (S3Object s3Object : listObjectsV2Response.contents()) {
       if (s3Object.key().equals(prefix)) {
@@ -328,7 +326,7 @@ public class S3PinotFS extends BasePinotFS {
 
       String dstPath = sanitizePath(dstUri.getPath());
       CopyObjectRequest copyReq = generateCopyObjectRequest(encodedUrl, dstUri, dstPath, null);
-      CopyObjectResponse copyObjectResponse = _s3Client.copyObject(copyReq);
+      CopyObjectResponse copyObjectResponse = _s3Operations.copyObject(copyReq);
       return copyObjectResponse.sdkHttpResponse().isSuccessful();
     } catch (S3Exception e) {
       throw new IOException(e);
@@ -348,7 +346,7 @@ public class S3PinotFS extends BasePinotFS {
       }
 
       PutObjectRequest putObjectRequest = generatePutObjectRequest(uri, path);
-      PutObjectResponse putObjectResponse = _s3Client.putObject(putObjectRequest, new byte[0]);
+      PutObjectResponse putObjectResponse = _s3Operations.putObject(putObjectRequest, new byte[0]);
       return putObjectResponse.sdkHttpResponse().isSuccessful();
     } catch (Throwable t) {
       throw new IOException(t);
@@ -372,17 +370,17 @@ public class S3PinotFS extends BasePinotFS {
 
         if (prefix.equals(DELIMITER)) {
           ListObjectsV2Request listObjectsV2Request = listObjectsV2RequestBuilder.build();
-          listObjectsV2Response = _s3Client.listObjectsV2(listObjectsV2Request);
+          listObjectsV2Response = _s3Operations.listObjectsV2(listObjectsV2Request);
         } else {
           ListObjectsV2Request listObjectsV2Request = listObjectsV2RequestBuilder.prefix(prefix).build();
-          listObjectsV2Response = _s3Client.listObjectsV2(listObjectsV2Request);
+          listObjectsV2Response = _s3Operations.listObjectsV2(listObjectsV2Request);
         }
         boolean deleteSucceeded = true;
         for (S3Object s3Object : listObjectsV2Response.contents()) {
           DeleteObjectRequest deleteObjectRequest =
               DeleteObjectRequest.builder().bucket(segmentUri.getHost()).key(s3Object.key()).build();
 
-          DeleteObjectResponse deleteObjectResponse = _s3Client.deleteObject(deleteObjectRequest);
+          DeleteObjectResponse deleteObjectResponse = _s3Operations.deleteObject(deleteObjectRequest);
 
           deleteSucceeded &= deleteObjectResponse.sdkHttpResponse().isSuccessful();
         }
@@ -392,7 +390,7 @@ public class S3PinotFS extends BasePinotFS {
         DeleteObjectRequest deleteObjectRequest =
             DeleteObjectRequest.builder().bucket(segmentUri.getHost()).key(prefix).build();
 
-        DeleteObjectResponse deleteObjectResponse = _s3Client.deleteObject(deleteObjectRequest);
+        DeleteObjectResponse deleteObjectResponse = _s3Operations.deleteObject(deleteObjectRequest);
 
         return deleteObjectResponse.sdkHttpResponse().isSuccessful();
       }
@@ -539,7 +537,7 @@ public class S3PinotFS extends BasePinotFS {
         }
         ListObjectsV2Request listObjectsV2Request = listObjectsV2RequestBuilder.build();
         LOGGER.debug("Trying to send ListObjectsV2Request {}", listObjectsV2Request);
-        ListObjectsV2Response listObjectsV2Response = _s3Client.listObjectsV2(listObjectsV2Request);
+        ListObjectsV2Response listObjectsV2Response = _s3Operations.listObjectsV2(listObjectsV2Request);
         LOGGER.debug("Getting ListObjectsV2Response: {}", listObjectsV2Response);
         List<S3Object> filesReturned = listObjectsV2Response.contents();
         filesReturned.forEach(visitor);
@@ -560,7 +558,7 @@ public class S3PinotFS extends BasePinotFS {
     String prefix = sanitizePath(base.relativize(srcUri).getPath());
     GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(srcUri.getHost()).key(prefix).build();
 
-    _s3Client.getObject(getObjectRequest, dstFile);
+    _s3Operations.getObject(getObjectRequest, dstFile);
   }
 
   @Override
@@ -573,7 +571,7 @@ public class S3PinotFS extends BasePinotFS {
       LOGGER.info("Copy {} from local to {}", srcFile.getAbsolutePath(), dstUri);
       String prefix = sanitizePath(getBase(dstUri).relativize(dstUri).getPath());
       PutObjectRequest putObjectRequest = generatePutObjectRequest(dstUri, prefix);
-      _s3Client.putObject(putObjectRequest, srcFile.toPath());
+      _s3Operations.putObject(putObjectRequest, srcFile.toPath());
     }
   }
 
@@ -582,7 +580,7 @@ public class S3PinotFS extends BasePinotFS {
     String bucket = dstUri.getHost();
     String prefix = sanitizePath(getBase(dstUri).relativize(dstUri).getPath());
     CreateMultipartUploadResponse multipartUpload =
-        _s3Client.createMultipartUpload(CreateMultipartUploadRequest.builder().bucket(bucket).key(prefix).build());
+        _s3Operations.createMultipartUpload(CreateMultipartUploadRequest.builder().bucket(bucket).key(prefix).build());
     String uploadId = multipartUpload.uploadId();
     // Upload parts sequentially to overcome the 5GB limit of a single PutObject call.
     // TODO: parts can be uploaded in parallel for higher throughput, given a thread pool.
@@ -602,7 +600,7 @@ public class S3PinotFS extends BasePinotFS {
       List<CompletedPart> parts = new ArrayList<>();
       while (totalUploaded < srcFile.length()) {
         long nextPartSize = Math.min(partSizeToUse, fileSize - totalUploaded);
-        UploadPartResponse uploadPartResponse = _s3Client.uploadPart(
+        UploadPartResponse uploadPartResponse = _s3Operations.uploadPart(
             UploadPartRequest.builder().bucket(bucket).key(prefix).uploadId(uploadId).partNumber(partNum).build(),
             inputStream, nextPartSize);
         parts.add(CompletedPart.builder().partNumber(partNum).eTag(uploadPartResponse.eTag()).build());
@@ -613,12 +611,12 @@ public class S3PinotFS extends BasePinotFS {
         partNum++;
       }
       // complete the multipart upload
-      _s3Client.completeMultipartUpload(
+      _s3Operations.completeMultipartUpload(
           CompleteMultipartUploadRequest.builder().uploadId(uploadId).bucket(bucket).key(prefix)
               .multipartUpload(CompletedMultipartUpload.builder().parts(parts).build()).build());
     } catch (Exception e) {
       LOGGER.error("Failed to upload file {} to {} in parts. Abort upload request: {}", srcFile, dstUri, uploadId, e);
-      _s3Client.abortMultipartUpload(
+      _s3Operations.abortMultipartUpload(
           AbortMultipartUploadRequest.builder().uploadId(uploadId).bucket(bucket).key(prefix).build());
       throw e;
     }
@@ -649,7 +647,7 @@ public class S3PinotFS extends BasePinotFS {
 
       ListObjectsV2Request listObjectsV2Request =
           ListObjectsV2Request.builder().bucket(uri.getHost()).prefix(prefix).maxKeys(2).build();
-      ListObjectsV2Response listObjectsV2Response = _s3Client.listObjectsV2(listObjectsV2Request);
+      ListObjectsV2Response listObjectsV2Response = _s3Operations.listObjectsV2(listObjectsV2Request);
       return listObjectsV2Response.hasContents();
     } catch (NoSuchKeyException e) {
       LOGGER.error("Could not get directory entry for {}", uri);
@@ -673,13 +671,13 @@ public class S3PinotFS extends BasePinotFS {
       String path = sanitizePath(uri.getPath());
       CopyObjectRequest request = generateCopyObjectRequest(encodedUrl, uri, path,
           ImmutableMap.of("lastModified", String.valueOf(System.currentTimeMillis())));
-      _s3Client.copyObject(request);
+      _s3Operations.copyObject(request);
       long newUpdateTime = getS3ObjectMetadata(uri).lastModified().toEpochMilli();
       return newUpdateTime > s3ObjectMetadata.lastModified().toEpochMilli();
     } catch (NoSuchKeyException e) {
       String path = sanitizePath(uri.getPath());
       PutObjectRequest putObjectRequest = generatePutObjectRequest(uri, path);
-      _s3Client.putObject(putObjectRequest, new byte[0]);
+      _s3Operations.putObject(putObjectRequest, new byte[0]);
       return true;
     } catch (S3Exception e) {
       throw new IOException(e);
@@ -728,7 +726,7 @@ public class S3PinotFS extends BasePinotFS {
       String path = sanitizePath(uri.getPath());
       GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(uri.getHost()).key(path).build();
 
-      return _s3Client.getObject(getObjectRequest);
+      return _s3Operations.getObject(getObjectRequest);
     } catch (S3Exception e) {
       throw e;
     }
@@ -737,7 +735,7 @@ public class S3PinotFS extends BasePinotFS {
   @Override
   public void close()
       throws IOException {
-    _s3Client.close();
+    _s3Operations.close();
     super.close();
   }
 }
