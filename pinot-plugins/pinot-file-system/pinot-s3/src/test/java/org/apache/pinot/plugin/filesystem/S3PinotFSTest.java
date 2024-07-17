@@ -41,6 +41,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
@@ -62,6 +63,7 @@ public class S3PinotFSTest {
   private S3MockContainer _s3MockContainer;
   private S3PinotFS _s3PinotFS;
   private S3Client _s3Client;
+  private S3AsyncClient _s3AsyncClient;
 
   @BeforeClass
   public void setUp() {
@@ -69,6 +71,7 @@ public class S3PinotFSTest {
     _s3MockContainer.start();
     String endpoint = _s3MockContainer.getHttpEndpoint();
     _s3Client = createS3ClientV2(endpoint);
+    _s3AsyncClient = createS3AsyncClientV2(endpoint);
     _s3PinotFS = new S3PinotFS();
     _s3PinotFS.init(_s3Client);
     _s3Client.createBucket(CreateBucketRequest.builder().bucket(BUCKET).build());
@@ -485,5 +488,13 @@ public class S3PinotFSTest {
         .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar")))
         .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
         .endpointOverride(URI.create(endpoint)).build();
+  }
+
+  private static S3AsyncClient createS3AsyncClientV2(String endpoint) {
+    return S3AsyncClient.crtBuilder().region(Region.of("us-east-1"))
+        .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar")))
+        .forcePathStyle(true)
+        .endpointOverride(URI.create(endpoint))
+        .build();
   }
 }

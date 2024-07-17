@@ -31,8 +31,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
+
+/**
+ * This implementation uses AWS SDK S3AsyncClient
+ */
 public class S3OperationsAsyncImpl implements S3Operations {
-  private S3AsyncClient _s3Client;
+  private final S3AsyncClient _s3Client;
   private final ExecutorService _uploadPartExecutorService = Executors.newCachedThreadPool();
 
   public S3OperationsAsyncImpl(S3AsyncClient client) {
