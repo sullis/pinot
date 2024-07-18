@@ -1,14 +1,18 @@
 package org.apache.pinot.plugin.filesystem;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.IOUtils;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.AbortMultipartUploadResponse;
@@ -46,7 +50,7 @@ public class S3OperationsAsyncImpl implements S3Operations {
   }
 
   private static <T> T await(CompletableFuture<T> future) {
-    return await(future, 1, TimeUnit.SECONDS);
+    return await(future, 30, TimeUnit.SECONDS);
   }
 
   private static <T> T await(CompletableFuture<T> future, long n, TimeUnit timeUnit) {
@@ -55,7 +59,13 @@ public class S3OperationsAsyncImpl implements S3Operations {
     } catch (RuntimeException rtException) {
       throw rtException;
     } catch (Exception ex) {
-      throw new IllegalStateException(ex);
+      Throwable cause = ex.getCause();
+      if ((cause != null) && (cause instanceof SdkException)) {
+        throw (SdkException) cause;
+      }
+      else {
+        throw new IllegalStateException(ex);
+      }
     }
   }
 
@@ -76,11 +86,13 @@ public class S3OperationsAsyncImpl implements S3Operations {
 
   @Override
   public PutObjectResponse putObject(PutObjectRequest request, Path sourceFilePath) {
+    System.out.println("putObject: length=" + sourceFilePath.toFile().length());
     return await(_s3Client.putObject(request, sourceFilePath));
   }
 
   @Override
   public PutObjectResponse putObject(PutObjectRequest request, byte[] sourceFileBytes) {
+    System.out.println("putObject: bytes=" + sourceFileBytes.length);
     return await(_s3Client.putObject(request, AsyncRequestBody.fromBytes(sourceFileBytes)));
   }
 
@@ -91,7 +103,9 @@ public class S3OperationsAsyncImpl implements S3Operations {
 
   @Override
   public InputStream getObject(GetObjectRequest request) {
-    return await(_s3Client.getObject(request, AsyncResponseTransformer.toBlockingInputStream()));
+    ResponseInputStream<GetObjectResponse>
+        responseInputStream = await(_s3Client.getObject(request, AsyncResponseTransformer.toBlockingInputStream()));
+    return responseInputStream;
   }
 
   @Override
@@ -106,6 +120,7 @@ public class S3OperationsAsyncImpl implements S3Operations {
 
   @Override
   public UploadPartResponse uploadPart(UploadPartRequest request, InputStream input, long partSize) {
+    System.out.println("uploadPart called: partSize=" + partSize);
     return await(_s3Client.uploadPart(request, AsyncRequestBody.fromInputStream(input, partSize, _uploadPartExecutorService)));
   }
 
@@ -127,5 +142,11 @@ public class S3OperationsAsyncImpl implements S3Operations {
   @Override
   public void close() {
     _s3Client.close();
+  }
+
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "[" + _s3Client.getClass().getSimpleName() + "]";
   }
 }

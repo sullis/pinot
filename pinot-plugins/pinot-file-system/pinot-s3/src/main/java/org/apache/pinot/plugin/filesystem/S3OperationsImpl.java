@@ -105,4 +105,9 @@ public class S3OperationsImpl implements S3Operations {
   public void close() {
     _s3Client.close();
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + ":[" + _s3Client.getClass().getSimpleName() + "]";
+  }
 }
