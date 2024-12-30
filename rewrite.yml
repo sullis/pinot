@@ -1,0 +1,7 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: PinotInternalBestPractices
+displayName: Pinot internal recipe
+description: Pinot internal recipe
+recipeList:
+  - org.openrewrite.java.logging.slf4j.Slf4jBestPractices
